@@ -9,9 +9,9 @@ using App;
 // BookContext-like per-widget state with the current_ctx proxy pattern
 // (see docs/B_HYBRID.md). The loop stays half-elmish; only the view that
 // owns retained-native state uses this escape.
-public class App.HybridModel {
+public class App.HybridModel : GLib.Object {
     public int count = 0;
-    // Per-resource state + proxy, e.g.:
+    // Per-resource state + proxy, e.g. (GLib.Object base is required for notify_property):
     // private HybridCtx _empty = new HybridCtx ();
     // private HybridCtx? _active = null;
     // public HybridCtx current_ctx { get { return _active ?? _empty; } }

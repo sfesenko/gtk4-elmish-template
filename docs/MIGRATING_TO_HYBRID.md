@@ -62,7 +62,7 @@ Add `current_ctx` to `updateModel` handled messages only for the view that needs
 ### 3. View — apply escape only to the retained-native widget
 
 * Keep one widget instance (e.g. one `WebView` / `Map`), recreate only on `notify["current_ctx"]` (vCHM `src/view/viewer.vala:122` pattern). Do not create per-message.
-* Coalesce continuous events via `ScrolledWindow.get_vadjustment().value_changed` → `Timeout 1500ms` (see `src/hybrid_example.vala:31`). This is the `B+hybrid` part — it lives in the view, behind `#if B_HYBRID` if you want `hybrid=half` to skip it.
+* Coalesce continuous events via `ScrolledWindow.get_vadjustment().value_changed` → `Timeout 1500ms` (see `src/hybrid_example.vala:33`). This is the `B+hybrid` part — it lives in the view, behind `#if B_HYBRID` if you want `hybrid=half` to skip it.
 
 ```vala
 #if B_HYBRID

@@ -101,7 +101,9 @@ change: render everything from `model` and drop the `msg` parameter.
 
 The project is named `half-elmish-template` with app id
 `com.example.half_elmish_template` and namespace `App` (core: `Elmish`).
-To make it yours:
+Prefer `./scripts/scaffold.sh my-app com.example.my_app` — it renames build
+files, ids, `POTFILES`, icons, and the Flatpak manifest (README/AGENTS prose
+and `scripts/PKGBUILD` `pkgname`/`pkgdesc` remain manual). To rename by hand:
 
 1. Pick a repo name, e.g. `my-app`, and an app id following the
    `com.github.<username>.<name>` convention (hyphens become underscores).

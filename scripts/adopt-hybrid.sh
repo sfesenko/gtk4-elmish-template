@@ -173,9 +173,9 @@ using App;
 // BookContext-like per-widget state with the current_ctx proxy pattern
 // (see docs/B_HYBRID.md). The loop stays half-elmish; only the view that
 // owns retained-native state uses this escape.
-public class App.HybridModel {
+public class App.HybridModel : GLib.Object {
     public int count = 0;
-    // Per-resource state + proxy, e.g.:
+    // Per-resource state + proxy, e.g. (GLib.Object base is required for notify_property):
     // private HybridCtx _empty = new HybridCtx ();
     // private HybridCtx? _active = null;
     // public HybridCtx current_ctx { get { return _active ?? _empty; } }
@@ -214,5 +214,6 @@ else
   echo "  = src/hybrid_example.vala already present"
 fi
 echo "Done. Next: meson setup builddir -Dhybrid=b_hybrid && see docs/MIGRATING_TO_HYBRID.md (in the template repo)"
-echo "Note: the example uses the App namespace — adapt to your namespace before adopting per-view (docs/B_HYBRID.md)."
+echo "Note: the example uses the App namespace — adapt to your namespace before adopting per-view (template repo, docs/B_HYBRID.md)."
+echo "Note: patches the first executable() in meson.build — point it at your app target if you have several."
 echo "Rollback: $0 --revert  or  meson setup builddir -Dhybrid=half"
