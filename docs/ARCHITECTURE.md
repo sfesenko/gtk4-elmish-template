@@ -178,18 +178,38 @@ imperatively. Any construction method fits:
 | `.ui` (GtkBuilder XML) | `Gtk.Builder.new_from_resource`, `get_object` by name into view fields; signals connect to dispatch |
 | Blueprint | compiles to `.ui` → same GtkBuilder path (`blueprint-compiler` is a build-time only dep) |
 
-## When to use this pattern (and when not)
+## When to use this pattern — and when to escalate to B+hybrid
 
 Elmish is not strictly superior to "usual Vala GTK" (signals + widgets-as-state
-+ GObject bindings) — it is a tradeoff:
++ GObject bindings) — it is a tradeoff. **Start half-elmish always.** It is
+the simplest, fully tested, and covers most apps. Only escalate per-view to
+`B+hybrid` (`docs/B_HYBRID.md`) when a retained-native widget forces it.
+
+### Half-elmish (default — start here)
 
 **Use it when:** business logic deserves headless tests; multiple paths mutate
 the same state; async flows (save/load/network) need status feedback; teams
-want one uniform flow to review.
+want one uniform flow to review; and no widget owns state that
+`updateView(msg, model, view)` cannot rebuild from `model` alone.
 
 **Don't use it when:** the app is a small tool where GTK widgets *are* the
 model (editable trees, live bindings everywhere); the ceremony of a message
 per interaction outweighs the testability gain.
+
+### B+hybrid (escape hatch — adopt later, per-view)
+
+| Stay half-elmish | Adopt B+hybrid |
+|---|---|
+| `Counter` `src/components/counter/` · notes-store — state fully in `model`, `updateView` pure-ish | `WebKit.WebView` · `Shumate.Map` · `GStreamer` · `DrawingArea+GestureDrag` — widget owns `BackForwardList`/`WebContext`/`loaded_url`/tile cache not reconstructible from `model` |
+| Headless `test_update` covers behavior | `value_changed`/`row_expanded` floods at pixel rate → `updateView` per-message would thrash → need coalesced `adjustment.value_changed` `1500ms` (`src/hybrid_example.vala`) |
+
+**Trigger rule (all three must hold to adopt):**
+
+1. Widget keeps retained-native state outside GTK property bindings.
+2. Rebuilding it from `model` in `updateView` would recreate or lose state every message (e.g. `WebView.load_uri`, `Map.set_center`, pipeline restart).
+3. Events arrive at continuous rate (`value_changed`, `motion`, `notify::zoom-level`) not discrete user actions.
+
+If only (1) without (2)–(3) (e.g. a one-shot `WebView` load), stay half-elmish and drive it from a `Cmd`. See `docs/MIGRATING_TO_HYBRID.md` for the incremental, additive checklist (one meson toggle + `current_ctx` per-view, `lib_core` stays GTK-free), and `docs/B_HYBRID.md` for the `current_ctx`/`value_changed` pattern.
 
 ## Adding a new feature, step by step
 
