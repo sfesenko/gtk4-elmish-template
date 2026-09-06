@@ -1,5 +1,0 @@
-option('hybrid',
-  type: 'combo',
-  choices: ['half', 'b_hybrid'],
-  value: 'half',
-  description: 'Architecture mode: half-elmish (pure) or B+hybrid (escape hatch for retained-native widgets like WebView/Map)')

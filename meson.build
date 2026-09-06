@@ -6,17 +6,9 @@ project('half-elmish-template', ['c', 'vala'],
                    ],
 )
 
-
-hybrid_mode = get_option('hybrid')
-message('Hybrid mode: @0@'.format(hybrid_mode))
-
 i18n = import('i18n')
 
 gnome = import('gnome')
-
-if hybrid_mode == 'b_hybrid'
-  add_project_arguments(['--define=B_HYBRID'], language: 'vala')
-endif
 
 add_global_arguments([
         '-DGETTEXT_PACKAGE="@0@"'.format(meson.project_name()),
@@ -62,18 +54,13 @@ config_file = configure_file(
     configuration: config_data
 )
 
-app_sources = [
-  'src/main.vala',
-  'src/app-view.vala',
-  config_file,
-]
-if hybrid_mode == 'b_hybrid'
-  app_sources += 'src/hybrid_example.vala'
-endif
-
 executable(
   meson.project_name(),
-  app_sources,
+  [
+    'src/main.vala',
+    'src/app-view.vala',
+    config_file,
+  ],
   vala_args: [ '--target-glib=2.76' ],
   dependencies: [
     dependency('gtk4', version: '>= 4.10'),
