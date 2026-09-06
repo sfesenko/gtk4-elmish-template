@@ -1,4 +1,4 @@
-# Maintainer: Sergii Fesenko <sfesenko@example.com>
+# Maintainer: Sergii Fesenko <sergii_fesenko@outlook.com>
 #
 # Builds from the LIVE work tree — uncommitted and untracked files are
 # included. Run via ./scripts/build-package.sh (recommended) or from this
@@ -16,7 +16,7 @@ pkgdesc="Vala GTK4 half-elmish application template (counter demo)"
 arch=('x86_64')
 url="https://github.com/sfesenko/gtk4-elmish-template"
 license=('MIT')
-depends=('gtk4' 'glib2' 'dconf')
+depends=('gtk4' 'glib2')
 makedepends=('meson' 'ninja' 'vala' 'gettext')
 source=()
 sha256sums=()

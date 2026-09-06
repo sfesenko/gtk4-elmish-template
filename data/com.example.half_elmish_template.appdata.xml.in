@@ -13,6 +13,6 @@
     (Sub), and a GTK-free core library that runs under plain glib tests.</p>
   </description>
   <launchable type="desktop-id">com.example.half_elmish_template.desktop</launchable>
-  <developer_name>Template Author</developer_name>
+  <developer_name>Sergii Fesenko</developer_name>
   <content_rating type="oars-1.1"/>
 </component>

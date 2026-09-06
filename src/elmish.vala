@@ -101,10 +101,6 @@ namespace Elmish {
             this.updateView = (owned) updateView;
         }
 
-        ~ElmishProgram () {
-            message ("~ElmishProgram");
-        }
-
         // Creates the view and runs the optional initial command
         // (e.g. asynchronously load persisted state).
         public void start (Cmd<Message>? init_cmd = null) {
