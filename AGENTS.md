@@ -43,7 +43,9 @@ Arch package: `./scripts/build-package.sh` (see README).
    `docs/ARCHITECTURE.md`).
 4. **View code only lives in `src/app-view.vala`.** Widget signals become
    messages; `updateView` only re-renders from the model. Transient widget
-   state (entry text, focus) may stay in the view.
+   state (entry text, focus) may stay in the view. `updateView` must render
+   from `model` — `msg` is a kind hint only, because coalescing delivers just
+   the latest message of a burst (intermediate payloads are dropped).
 5. **`string[]` is not ref-counted.** If a Cmd reads the model asynchronously,
    copy the array inside the sub.
 6. **Tests go in `tests/`**, must compile without GTK, follow the existing

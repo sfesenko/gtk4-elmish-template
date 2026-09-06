@@ -1,6 +1,6 @@
 # Adopting B+Hybrid in an Already-Developed Project
 
-This guide is for **existing half-elmish apps** that need a retained-native widget later (e.g. you started as `Notes`/`Counter` and now add `WebKit.WebView`, `Shumate.Map`, `GStreamer`, `DrawingArea`+drag). **Do not re-clone or re-scaffold.** Adoption is **additive** — one meson toggle + one reference file, `lib_core` stays GTK-free, other views unchanged.
+This guide is for **existing half-elmish apps** that need a retained-native widget later (e.g. you started as `Notes`/`Counter` and now add `WebKit.WebView`, `Shumate.Map`, `GStreamer`, `DrawingArea`+drag). **Do not re-clone or re-scaffold.** Adoption is **additive** — one meson toggle + one reference file + a `meson.build` gate, `lib_core` stays GTK-free, other views unchanged.
 
 ## What adoption changes
 
@@ -13,7 +13,7 @@ updateView(msg,model,view) updateView(msg,model,view) + per-view escape
                        ───  lib_core still no GTK, half-elmish views still pure
 ```
 
-Files added: `meson_options.txt` (toggle), `src/hybrid_example.vala` (reference, `#if B_HYBRID`), `docs/B_HYBRID.md` (rule). No change to `src/elmish.vala`, `src/model/messages.vala` `kind`, `src/app-update.vala` purity.
+Files added: `meson_options.txt` (toggle), `src/hybrid_example.vala` (reference, `#if B_HYBRID`), `docs/B_HYBRID.md` (rule). `meson.build` gains the `hybrid_mode` gate (`--define=B_HYBRID`) plus the example in executable sources. No change to `src/elmish.vala`, `src/model/messages.vala` `kind`, `src/app-update.vala` purity.
 
 ## Checklist — apply incrementally per-view
 
@@ -23,7 +23,7 @@ Assume existing project has `src/model/messages.vala`, `src/app-update.vala`, `s
 
 ```bash
 ./scripts/adopt-hybrid.sh --check   # preview — no writes
-./scripts/adopt-hybrid.sh --apply   # idempotent: adds meson_options.txt + src/hybrid_example.vala if missing
+./scripts/adopt-hybrid.sh --apply   # idempotent: adds meson_options.txt toggle + meson.build gate + src/hybrid_example.vala if missing
 meson setup builddir -Dhybrid=b_hybrid
 meson test -C builddir              # must stay green — hybrid ignored when half
 ```
@@ -62,7 +62,7 @@ Add `current_ctx` to `updateModel` handled messages only for the view that needs
 ### 3. View — apply escape only to the retained-native widget
 
 * Keep one widget instance (e.g. one `WebView` / `Map`), recreate only on `notify["current_ctx"]` (vCHM `src/view/viewer.vala:122` pattern). Do not create per-message.
-* Coalesce continuous events via `ScrolledWindow.get_vadjustment().value_changed` → `Timeout 1500ms` (see `src/hybrid_example.vala:7`). This is the `B+hybrid` part — it lives in the view, behind `#if B_HYBRID` if you want `hybrid=half` to skip it.
+* Coalesce continuous events via `ScrolledWindow.get_vadjustment().value_changed` → `Timeout 1500ms` (see `src/hybrid_example.vala:31`). This is the `B+hybrid` part — it lives in the view, behind `#if B_HYBRID` if you want `hybrid=half` to skip it.
 
 ```vala
 #if B_HYBRID
@@ -82,7 +82,7 @@ Other views (`src/components/counter/` etc.) stay plain half-elmish — `updateV
 
 ### 5. Tests — headless stay headless
 
-Add model tests dispatching the new message and asserting `model.current_ctx` changes (like `tests/test_update.vala`). No GTK needed. View coalescing is manual QA or `meson test` with `--define=B_HYBRID`.
+Add model tests dispatching the new message and asserting `model.current_ctx` changes (like `tests/test_update.vala`). No GTK needed. View coalescing is manual QA — note this template's `meson.build` excludes `src/hybrid_example.vala` from sources in `hybrid=half` mode (adopt-patched trees compile it as an inert empty `#if B_HYBRID` unit instead), so run tests with `-Dhybrid=b_hybrid` to compile and exercise the demo.
 
 ## When this checklist is unnecessary
 
@@ -90,4 +90,4 @@ If the new widget has no retained-native state (`Gtk.Label`, `ListBox`, `ColumnV
 
 ## Rollback
 
-`meson setup builddir -Dhybrid=half` ignores `#if B_HYBRID` blocks; `scripts/adopt-hybrid.sh --revert` (or `rm src/hybrid_example.vala; sed -i "s/value: 'b_hybrid'/value: 'half'/" meson_options.txt`) restores pure half-elmish. `lib_core` tests still pass.
+Prefer `scripts/adopt-hybrid.sh --revert`: it flips `meson_options.txt` back to `hybrid=half`, and the example file remains as an inert empty `#if B_HYBRID` unit. Full removal also requires deleting its sources line in `meson.build` — `rm src/hybrid_example.vala` alone breaks configuration because the file is listed in executable sources. `lib_core` tests still pass either way.

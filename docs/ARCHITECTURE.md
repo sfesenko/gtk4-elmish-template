@@ -129,6 +129,11 @@ results directly.
 (from another thread, or after the function returned), build a fresh copy of
 the array inside the sub.
 
+**Termination:** returned Cmds must terminate — `Cmd.exec` runs synchronously
+inside `process()`, so a sub that synchronously re-dispatches its own trigger
+message recurses until stack overflow. Async callbacks (GIO, timeouts, idle)
+dispatch later through the main loop and are the intended pattern.
+
 ### Composition: Cmd.map
 
 Components are the scalability story: each component works with **its own
@@ -164,7 +169,18 @@ it applies the message and re-reads the model. Rules for the view:
 - Transient widget state (entry text, focus) may live in the view; only
   application state belongs in the model.
 - View updates are coalesced: bursts of messages collapse into one idle
-  callback that re-renders from the model with the latest message.
+  callback that re-renders from the model with the latest message. So
+  `updateView` must render from `model`; `msg` is a kind hint only —
+  intermediate payloads in a burst are intentionally dropped.
+- The program holds the view and the view holds a bound `dispatch`, i.e. a
+  reference cycle. Harmless for a single-window app lifetime; in a
+  multi-window app, clear the view's `dispatch` (or `weak` it) on window
+  close or each closed window leaks its program+view pair.
+- Dispatching before `start()` updates the model but drops the view update
+  (there is no view yet); `createView` builds from the live model, so state
+  still converges. Subscriptions are fire-and-forget (no removal handle) —
+  a per-view subscription that outlives its view leaks; prefer app-lifetime
+  subs or disconnect explicitly.
 
 ## View construction: code, .ui, or Blueprint — all supported
 

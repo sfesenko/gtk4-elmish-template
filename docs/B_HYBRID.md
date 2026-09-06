@@ -53,7 +53,7 @@ Apply only to the view that owns the retained-native widget; other views stay pl
 ## How to enable
 
 * **New project (post-clone, template):** `scripts/scaffold.sh --b-hybrid` sets `meson_options.txt:hybrid=b_hybrid`; branch `b+hybrid` is pre-enabled `hybrid=b_hybrid`.
-* **Already-developed project (incremental, no re-clone):** `scripts/adopt-hybrid.sh --check` preview → `--apply` idempotent apply (`meson_options.txt` toggle + `src/hybrid_example.vala` if missing). Then `meson setup builddir -Dhybrid=b_hybrid` and apply the per-view pattern above to the one view that needs it. See `docs/MIGRATING_TO_HYBRID.md`.
+* **Already-developed project (incremental, no re-clone):** `scripts/adopt-hybrid.sh --check` preview → `--apply` idempotent apply (`meson_options.txt` toggle + `meson.build` gate + `src/hybrid_example.vala` in executable sources, if missing). Then `meson setup builddir -Dhybrid=b_hybrid` and apply the per-view pattern above to the one view that needs it. See `docs/MIGRATING_TO_HYBRID.md`.
 
 ## Toolkit — what stays, what changes
 

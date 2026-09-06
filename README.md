@@ -41,7 +41,7 @@ Already-developed app needing `B+hybrid` later (incremental, no re-clone):
 
 ```bash
 ./scripts/adopt-hybrid.sh --check   # preview what would change
-./scripts/adopt-hybrid.sh --apply   # add hybrid toggle + example (idempotent, 1 line + 1 file)
+./scripts/adopt-hybrid.sh --apply   # add hybrid toggle + example + meson.build gate (idempotent)
 meson setup builddir -Dhybrid=b_hybrid
 ```
 
@@ -60,7 +60,7 @@ Branches (alternative to `scaffold.sh` flag):
 | `Counter` `src/components/counter/` · notes store `src/model/messages.vala` · any state fully derived from `model` and renderable by `updateView(msg,model,view)` | `WebKit.WebView` `Shumate.Map` `GStreamer` `DrawingArea` + `GestureDrag` — widget owns `BackForwardList`/`WebContext`/`loaded_url`/tile cache not reconstructible from `model` |
 | Headless `meson test` (`test_update`) covers behavior | `value_changed` floods at pixel rate — `updateView` per-message would thrash → need `adjustment.value_changed` coalesced `1500ms` (`src/hybrid_example.vala`) |
 
-**Rule:** start `half-elmish`; adopt `B+hybrid` incrementally per-view when the trigger above hits. The adoption adds one meson toggle and one example file, `lib_core` stays GTK-free. See `docs/MIGRATING_TO_HYBRID.md` (checklist) and `docs/B_HYBRID.md` (pattern).
+**Rule:** start `half-elmish`; adopt `B+hybrid` incrementally per-view when the trigger above hits. The adoption adds one meson toggle, one example file, and a `meson.build` gate (`--define=B_HYBRID` + example in sources); `lib_core` stays GTK-free. See `docs/MIGRATING_TO_HYBRID.md` (checklist) and `docs/B_HYBRID.md` (pattern).
 
 ## What the template demonstrates
 
