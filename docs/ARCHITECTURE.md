@@ -217,7 +217,7 @@ per interaction outweighs the testability gain.
 | Stay half-elmish | Adopt B+hybrid |
 |---|---|
 | `Counter` `src/components/counter/` · notes-store — state fully in `model`, `updateView` pure-ish | `WebKit.WebView` · `Shumate.Map` · `GStreamer` · `DrawingArea+GestureDrag` — widget owns `BackForwardList`/`WebContext`/`loaded_url`/tile cache not reconstructible from `model` |
-| Headless `test_update` covers behavior | `value_changed`/`row_expanded` floods at pixel rate → `updateView` per-message would thrash → need coalesced `adjustment.value_changed` `1500ms` (`src/hybrid_example.vala`) |
+| Headless `test_update` covers behavior | `value_changed`/`row_expanded` floods at pixel rate → `updateView` per-message would thrash → need coalesced `adjustment.value_changed` `1500ms` |
 
 **Trigger rule (all three must hold to adopt):**
 
@@ -225,7 +225,7 @@ per interaction outweighs the testability gain.
 2. Rebuilding it from `model` in `updateView` would recreate or lose state every message (e.g. `WebView.load_uri`, `Map.set_center`, pipeline restart).
 3. Events arrive at continuous rate (`value_changed`, `motion`, `notify::zoom-level`) not discrete user actions.
 
-If only (1) without (2)–(3) (e.g. a one-shot `WebView` load), stay half-elmish and drive it from a `Cmd`. See `docs/MIGRATING_TO_HYBRID.md` for the incremental, additive checklist (one meson toggle + `current_ctx` per-view, `lib_core` stays GTK-free), and `docs/B_HYBRID.md` for the `current_ctx`/`value_changed` pattern.
+If only (1) without (2)–(3) (e.g. a one-shot `WebView` load), stay half-elmish and drive it from a `Cmd`. See `docs/B_HYBRID.md` for the pattern and `docs/MIGRATING_TO_HYBRID.md` for the per-view checklist.
 
 ## Adding a new feature, step by step
 

@@ -26,41 +26,9 @@ meson test -C builddir        # headless — no display needed
 ./builddir/half-elmish-template
 ```
 
-This template **always starts as half-elmish** (pure `dispatch → updateModel → Cmd` + imperative view). It is the simplest, most testable, and fully sufficient for most apps. Only consider `B+hybrid` when a retained-native widget forces it — see [When to use B+hybrid](#when-to-use-bhybrid).
-
-Scaffold from `main` (post-clone):
-
-```bash
-git clone https://github.com/sfesenko/gtk4-elmish-template my-app && cd my-app
-./scripts/scaffold.sh --half my-app com.example.my_app       # default — pure half-elmish
-# If you already know you need WebView/Map/Canvas/retained state later:
-./scripts/scaffold.sh --b-hybrid my-app com.example.my_app
-```
-
-Already-developed app needing `B+hybrid` later (incremental, no re-clone):
-
-```bash
-./scripts/adopt-hybrid.sh --check   # preview what would change
-./scripts/adopt-hybrid.sh --apply   # add hybrid toggle + example + meson.build gate (idempotent)
-meson setup builddir -Dhybrid=b_hybrid
-```
-
-Branches (alternative to `scaffold.sh` flag):
-
-* `half-elmish` — pure half-elmish, no hybrid files (`c0d804b` minimal).
-* `main` — dual-scaffold, half-elmish default (`hybrid=half` + `B+hybrid` files, switch via `meson -Dhybrid=b_hybrid` or `scripts/scaffold.sh --b-hybrid`).
-* `b+hybrid` — `B+hybrid` pre-enabled (`hybrid=b_hybrid` default, same files as `main` — diff is 1 line `meson_options.txt` `value`).
-
 ## When to use B+hybrid
 
-`B+hybrid` is **not** a second architecture — it is half-elmish plus a narrow imperative escape inside the view/model boundary (`docs/B_HYBRID.md`). Keep it hidden until a retained-native widget requires it.
-
-| Stay half-elmish | Switch to B+hybrid |
-|---|---|
-| `Counter` `src/components/counter/` · notes store `src/model/messages.vala` · any state fully derived from `model` and renderable by `updateView(msg,model,view)` | `WebKit.WebView` `Shumate.Map` `GStreamer` `DrawingArea` + `GestureDrag` — widget owns `BackForwardList`/`WebContext`/`loaded_url`/tile cache not reconstructible from `model` |
-| Headless `meson test` (`test_update`) covers behavior | `value_changed` floods at pixel rate — `updateView` per-message would thrash → need `adjustment.value_changed` coalesced `1500ms` (`src/hybrid_example.vala`) |
-
-**Rule:** start `half-elmish`; adopt `B+hybrid` incrementally per-view when the trigger above hits. The adoption adds one meson toggle, one example file, and a `meson.build` gate (`--define=B_HYBRID` + example in sources); `lib_core` stays GTK-free. See `docs/MIGRATING_TO_HYBRID.md` (checklist) and `docs/B_HYBRID.md` (pattern).
+B+hybrid is **not** a second architecture — it is half-elmish plus a narrow imperative escape inside the view/model boundary ([docs/B_HYBRID.md](docs/B_HYBRID.md)). Only adopt when a retained-native widget forces it (WebView, Map, DrawingArea+drag). See [docs/MIGRATING_TO_HYBRID.md](docs/MIGRATING_TO_HYBRID.md) for the pattern.
 
 ## What the template demonstrates
 
@@ -101,9 +69,7 @@ change: render everything from `model` and drop the `msg` parameter.
 
 The project is named `half-elmish-template` with app id
 `com.example.half_elmish_template` and namespace `App` (core: `Elmish`).
-Prefer `./scripts/scaffold.sh my-app com.example.my_app` — it renames build
-files, ids, `POTFILES`, icons, and the Flatpak manifest (README/AGENTS prose
-and `scripts/PKGBUILD` `pkgname`/`pkgdesc` remain manual). To rename by hand:
+To make it yours:
 
 1. Pick a repo name, e.g. `my-app`, and an app id following the
    `com.github.<username>.<name>` convention (hyphens become underscores).
