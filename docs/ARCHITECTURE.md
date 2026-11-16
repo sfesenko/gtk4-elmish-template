@@ -149,6 +149,21 @@ var mapped = counter_cmd.map<App.Message> ((m) => new CounterEvent (m));
 same way (wrap the child dispatch). This is the elmish composition primitive —
 see `src/elmish.vala`.
 
+### Composition: Cmd.chain / Cmd.batch
+
+Combine the side effects returned by several update branches into one `Cmd`:
+
+```vala
+return Cmd.batch<App.Message> ({ save_cmd, notify_cmd, log_cmd });
+// or, for two:
+return Cmd.chain<App.Message> (save_cmd, notify_cmd);
+```
+
+`chain(first, second)` runs `first` (including any tail it carries) and then
+`second`; `and_then` is an alias. `batch` skips `null` entries, so lists can
+be built conditionally. All composition is immutable and safe to use with
+temporary command arrays.
+
 ### Initial command
 
 `program.start (init_cmd)` runs an optional command when the view is created —
@@ -257,8 +272,8 @@ headless with plain glib assertions:
 
 - `test_update.vala` — model behavior for each message kind (5 tests)
 - `test_elmish.vala` — the core itself: Cmd chains, dispatch-back, coalescing,
-  subscriptions, thread marshalling, `Cmd.map` composition, plain-class
-  messages in the generic core (12 tests)
+  subscriptions, thread marshalling, `Cmd.map` composition, `Cmd.chain`/`batch`,
+  plain-class messages in the generic core (18 tests)
 
 Tests that need the main loop (coalescing, worker dispatch) pump it with
 `MainContext.default().iteration (true)`.

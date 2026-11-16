@@ -52,7 +52,8 @@ meson test -C builddir
 
 - `test_update` — model behavior for every message kind (5 tests)
 - `test_elmish` — the core itself: Cmd chains, dispatch-back, coalescing,
-  subscriptions, thread marshalling, `Cmd.map`, plain-class messages (12 tests)
+  subscriptions, thread marshalling, `Cmd.map`, `Cmd.chain`/`batch`, plain-class
+  messages (18 tests)
 
 All run without GTK — the core library imports nothing from GTK.
 

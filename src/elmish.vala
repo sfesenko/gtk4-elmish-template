@@ -35,8 +35,7 @@ namespace Elmish {
         // Sequence two commands: run `first` (including any chained tail it
         // carries) and then `second`. Either side may be null. This is the
         // composition primitive for combining the side effects returned by
-        // several update branches into one Cmd. `and_then` is an alias for
-        // `chain`, matching the naming used by some elmish ports.
+        // several update branches into one Cmd.
         public static Cmd<Message>? chain<Message> (Cmd<Message>? first,
                 Cmd<Message>? second) {
             if (first == null)
@@ -48,9 +47,9 @@ namespace Elmish {
             }, second);
         }
 
-        public static Cmd<Message>? and_then<Message> (Cmd<Message>? first,
-                Cmd<Message>? second) {
-            return chain<Message> (first, second);
+        // Sequence this command with `next` (instance form of `chain`).
+        public Cmd<Message>? and_then (Cmd<Message>? next) {
+            return chain<Message> (this, next);
         }
 
         // Run every non-null command in `commands` in order, as one Cmd.
@@ -58,8 +57,15 @@ namespace Elmish {
         // conditionally (e.g. `Cmd.batch ({save, notify})`).
         public static Cmd<Message>? batch<Message> (Cmd<Message>?[] commands) {
             Cmd<Message>? result = null;
-            foreach (var cmd in commands) {
-                result = chain<Message> (result, cmd);
+            for (var i = commands.length - 1; i >= 0; i--) {
+                var cmd = commands[i];
+                if (cmd == null) {
+                    continue;
+                }
+                var current = cmd;
+                result = new Cmd<Message> ((dispatch) => {
+                    Cmd.exec<Message> (dispatch, current);
+                }, result);
             }
             return result;
         }

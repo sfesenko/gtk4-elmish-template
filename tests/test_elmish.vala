@@ -68,6 +68,25 @@ void test_cmd_chain_null_handling () {
     assert (log[0] == "first");
 }
 
+void test_cmd_and_then_alias () {
+    string[] log = {};
+    Dispatch<CounterModel> probe = (msg) => {};
+    var first = new Cmd<CounterModel> ((dispatch) => log += "first");
+    var second = new Cmd<CounterModel> ((dispatch) => log += "second");
+    var chained = first.and_then (second);
+    Cmd.exec<CounterModel> (probe, chained);
+    assert (log.length == 2);
+    assert (log[0] == "first");
+    assert (log[1] == "second");
+}
+
+void test_cmd_batch_empty_and_all_null () {
+    Dispatch<CounterModel> probe = (msg) => {};
+    var cmds = new Cmd<CounterModel>[] { null, null };
+    assert (Cmd.batch<CounterModel> (cmds) == null);
+    assert (Cmd.batch<CounterModel> (new Cmd<CounterModel>[0]) == null);
+}
+
 void test_cmd_batch_runs_in_order_and_skips_null () {
     string[] log = {};
     Dispatch<CounterModel> probe = (msg) => {};
@@ -288,6 +307,8 @@ int main (string[] args) {
     Test.add_func ("/elmish/cmd_chain_null_handling", test_cmd_chain_null_handling);
     Test.add_func ("/elmish/cmd_batch_runs_in_order_and_skips_null", test_cmd_batch_runs_in_order_and_skips_null);
     Test.add_func ("/elmish/cmd_batch_preserves_chains", test_cmd_batch_preserves_chains);
+    Test.add_func ("/elmish/cmd_and_then_alias", test_cmd_and_then_alias);
+    Test.add_func ("/elmish/cmd_batch_empty_and_all_null", test_cmd_batch_empty_and_all_null);
     Test.add_func ("/elmish/cmd_can_dispatch_back", test_cmd_can_dispatch_back);
     Test.add_func ("/elmish/dispatch_updates_model", test_dispatch_updates_model);
     Test.add_func ("/elmish/view_update_runs_on_main_loop", test_view_update_runs_on_main_loop);
