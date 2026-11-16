@@ -32,6 +32,32 @@ namespace Elmish {
             }
         }
 
+        // Sequence two commands: run `first` (including any chained tail it
+        // carries) and then `second`. Either side may be null. This is the
+        // composition primitive for combining the side effects returned by
+        // several update branches into one Cmd.
+        public static Cmd<Message>? chain<Message> (Cmd<Message>? first,
+                Cmd<Message>? second) {
+            if (first == null)
+                return second;
+            if (second == null)
+                return first;
+            return new Cmd<Message> ((dispatch) => {
+                Cmd.exec<Message> (dispatch, first);
+            }, second);
+        }
+
+        // Run every non-null command in `commands` in order, as one Cmd.
+        // Null entries are skipped, so callers can build the list
+        // conditionally (e.g. `Cmd.batch ({save, notify})`).
+        public static Cmd<Message>? batch<Message> (Cmd<Message>?[] commands) {
+            Cmd<Message>? result = null;
+            foreach (var cmd in commands) {
+                result = chain<Message> (result, cmd);
+            }
+            return result;
+        }
+
         // Lifts this command into another message space — the composition
         // primitive for components. Each component works with its own
         // message type; the parent maps child commands into its own space:

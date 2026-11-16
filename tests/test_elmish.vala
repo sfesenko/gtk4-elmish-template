@@ -39,6 +39,65 @@ void test_cmd_null_is_noop () {
     assert (log.length == 0);
 }
 
+void test_cmd_chain_sequences () {
+    string[] log = {};
+    Dispatch<CounterModel> probe = (msg) => {};
+    var first = new Cmd<CounterModel> ((dispatch) => log += "first");
+    var second = new Cmd<CounterModel> ((dispatch) => log += "second");
+    var chained = Cmd.chain<CounterModel> (first, second);
+    Cmd.exec<CounterModel> (probe, chained);
+    assert (log.length == 2);
+    assert (log[0] == "first");
+    assert (log[1] == "second");
+}
+
+void test_cmd_chain_null_handling () {
+    string[] log = {};
+    Dispatch<CounterModel> probe = (msg) => {};
+    var second = new Cmd<CounterModel> ((dispatch) => log += "second");
+    var chained = Cmd.chain<CounterModel> (null, second);
+    Cmd.exec<CounterModel> (probe, chained);
+    assert (log.length == 1);
+    assert (log[0] == "second");
+
+    log = {};
+    var first = new Cmd<CounterModel> ((dispatch) => log += "first");
+    chained = Cmd.chain<CounterModel> (first, null);
+    Cmd.exec<CounterModel> (probe, chained);
+    assert (log.length == 1);
+    assert (log[0] == "first");
+}
+
+void test_cmd_batch_runs_in_order_and_skips_null () {
+    string[] log = {};
+    Dispatch<CounterModel> probe = (msg) => {};
+    var a = new Cmd<CounterModel> ((dispatch) => log += "a");
+    var b = new Cmd<CounterModel> ((dispatch) => log += "b");
+    var c = new Cmd<CounterModel> ((dispatch) => log += "c");
+    var cmds = new Cmd<CounterModel>[] { a, null, b, c };
+    var batched = Cmd.batch<CounterModel> (cmds);
+    Cmd.exec<CounterModel> (probe, batched);
+    assert (log.length == 3);
+    assert (log[0] == "a");
+    assert (log[1] == "b");
+    assert (log[2] == "c");
+}
+
+void test_cmd_batch_preserves_chains () {
+    string[] log = {};
+    Dispatch<CounterModel> probe = (msg) => {};
+    var first = new Cmd<CounterModel> ((dispatch) => log += "1",
+        new Cmd<CounterModel> ((dispatch) => log += "2"));
+    var second = new Cmd<CounterModel> ((dispatch) => log += "3");
+    var cmds = new Cmd<CounterModel>[] { first, second };
+    var batched = Cmd.batch<CounterModel> (cmds);
+    Cmd.exec<CounterModel> (probe, batched);
+    assert (log.length == 3);
+    assert (log[0] == "1");
+    assert (log[1] == "2");
+    assert (log[2] == "3");
+}
+
 void test_cmd_can_dispatch_back () {
     // A command receives dispatch and can send messages back — the async
     // result pattern (e.g. save completed).
@@ -225,6 +284,10 @@ int main (string[] args) {
 
     Test.add_func ("/elmish/cmd_chain_executes_in_order", test_cmd_chain_executes_in_order);
     Test.add_func ("/elmish/cmd_null_is_noop", test_cmd_null_is_noop);
+    Test.add_func ("/elmish/cmd_chain_sequences", test_cmd_chain_sequences);
+    Test.add_func ("/elmish/cmd_chain_null_handling", test_cmd_chain_null_handling);
+    Test.add_func ("/elmish/cmd_batch_runs_in_order_and_skips_null", test_cmd_batch_runs_in_order_and_skips_null);
+    Test.add_func ("/elmish/cmd_batch_preserves_chains", test_cmd_batch_preserves_chains);
     Test.add_func ("/elmish/cmd_can_dispatch_back", test_cmd_can_dispatch_back);
     Test.add_func ("/elmish/dispatch_updates_model", test_dispatch_updates_model);
     Test.add_func ("/elmish/view_update_runs_on_main_loop", test_view_update_runs_on_main_loop);
