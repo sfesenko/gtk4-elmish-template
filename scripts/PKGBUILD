@@ -1,4 +1,4 @@
-# Maintainer: Sergii Fesenko <sergii_fesenko@outlook.com>
+# Maintainer: Sergii Fesenko <sfesenko@users.noreply.github.com>
 #
 # Builds from the LIVE work tree — uncommitted and untracked files are
 # included. Run via ./scripts/build-package.sh (recommended) or from this
